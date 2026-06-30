@@ -54,7 +54,12 @@ def submit():
         return jsonify({"error": "Detection signal unavailable; submission not recorded"}), 503
 
     llm_score = result["llm_score"]
-    confidence = llm_score
+
+    # Second signal is deterministic and offline; it has no failure path.
+    pattern = signals.run_pattern_analysis(text)
+    pattern_score = pattern["pattern_score"]
+
+    confidence = (llm_score + pattern_score) / 2
     attribution = classify_attribution(confidence)
 
     entry = {
@@ -65,6 +70,8 @@ def submit():
         "confidence": confidence,
         "llm_score": llm_score,
         "llm_rationale": result["llm_rationale"],
+        "pattern_score": pattern_score,
+        "pattern_markers": pattern["pattern_markers"],
         "status": "classified",
     }
     db.log_event(entry)
@@ -75,7 +82,10 @@ def submit():
         "confidence": confidence,
         "label": PLACEHOLDER_LABEL,
         "status": "classified",
-        "signals": [{"name": "llm_judgement", "score": llm_score}],
+        "signals": [
+            {"name": "llm_judgement", "score": llm_score},
+            {"name": "pattern_analysis", "score": pattern_score},
+        ],
     })
 
 

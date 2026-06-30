@@ -1,3 +1,4 @@
+import json
 import sqlite3
 
 DB_PATH = "audit_log.db"
@@ -6,8 +7,12 @@ DB_PATH = "audit_log.db"
 # so the stored and returned shapes always match.
 ENTRY_COLUMNS = [
     "content_id", "creator_id", "timestamp", "attribution",
-    "confidence", "llm_score", "llm_rationale", "status",
+    "confidence", "llm_score", "llm_rationale",
+    "pattern_score", "pattern_markers", "status",
 ]
+
+# Columns whose Python value is a dict/list and is stored as JSON text.
+JSON_COLUMNS = {"pattern_markers"}
 
 # Precomputed projection string shared by the INSERT and SELECT below.
 COLUMNS_SQL = ", ".join(ENTRY_COLUMNS)
@@ -32,6 +37,8 @@ def init_db() -> None:
                 confidence REAL,
                 llm_score REAL,
                 llm_rationale TEXT,
+                pattern_score REAL,
+                pattern_markers TEXT,
                 status TEXT
             )
             """
@@ -43,7 +50,12 @@ def init_db() -> None:
 
 def log_event(entry: dict) -> int:
     placeholders = ", ".join("?" for _ in ENTRY_COLUMNS)
-    values = [entry.get(col) for col in ENTRY_COLUMNS]
+    values = []
+    for col in ENTRY_COLUMNS:
+        value = entry.get(col)
+        if col in JSON_COLUMNS and value is not None:
+            value = json.dumps(value)
+        values.append(value)
     conn = _connect()
     try:
         cursor = conn.execute(
@@ -63,6 +75,13 @@ def get_log(limit: int = 50) -> list[dict]:
             f"SELECT {COLUMNS_SQL} FROM audit_log ORDER BY rowid DESC LIMIT ?",
             (limit,),
         )
-        return [dict(row) for row in cursor.fetchall()]
+        entries = []
+        for row in cursor.fetchall():
+            record = dict(row)
+            for col in JSON_COLUMNS:
+                if record.get(col) is not None:
+                    record[col] = json.loads(record[col])
+            entries.append(record)
+        return entries
     finally:
         conn.close()
