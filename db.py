@@ -9,6 +9,7 @@ ENTRY_COLUMNS = [
     "content_id", "creator_id", "timestamp", "attribution",
     "confidence", "llm_score", "llm_rationale",
     "pattern_score", "pattern_markers", "status",
+    "appeal_reasoning",
 ]
 
 # Columns whose Python value is a dict/list and is stored as JSON text.
@@ -30,7 +31,7 @@ def init_db() -> None:
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS audit_log (
-                content_id TEXT NOT NULL,
+                content_id TEXT NOT NULL UNIQUE,
                 creator_id TEXT,
                 timestamp TEXT NOT NULL,
                 attribution TEXT,
@@ -39,7 +40,8 @@ def init_db() -> None:
                 llm_rationale TEXT,
                 pattern_score REAL,
                 pattern_markers TEXT,
-                status TEXT
+                status TEXT,
+                appeal_reasoning TEXT
             )
             """
         )
@@ -68,6 +70,16 @@ def log_event(entry: dict) -> int:
         conn.close()
 
 
+def _row_to_dict(row: sqlite3.Row) -> dict:
+    # Decode JSON-stored columns back to Python objects; shared by the readers
+    # so the returned shape always matches what log_event stored.
+    record = dict(row)
+    for col in JSON_COLUMNS:
+        if record.get(col) is not None:
+            record[col] = json.loads(record[col])
+    return record
+
+
 def get_log(limit: int = 50) -> list[dict]:
     conn = _connect()
     try:
@@ -75,13 +87,37 @@ def get_log(limit: int = 50) -> list[dict]:
             f"SELECT {COLUMNS_SQL} FROM audit_log ORDER BY rowid DESC LIMIT ?",
             (limit,),
         )
-        entries = []
-        for row in cursor.fetchall():
-            record = dict(row)
-            for col in JSON_COLUMNS:
-                if record.get(col) is not None:
-                    record[col] = json.loads(record[col])
-            entries.append(record)
-        return entries
+        return [_row_to_dict(row) for row in cursor.fetchall()]
+    finally:
+        conn.close()
+
+
+def get_event(content_id: str) -> dict | None:
+    # Look up a single submission by content_id for the appeal flow. Returns None
+    # for an unknown id so the caller can distinguish 404 from already-appealed.
+    conn = _connect()
+    try:
+        cursor = conn.execute(
+            f"SELECT {COLUMNS_SQL} FROM audit_log WHERE content_id = ? LIMIT 1",
+            (content_id,),
+        )
+        row = cursor.fetchone()
+        return _row_to_dict(row) if row is not None else None
+    finally:
+        conn.close()
+
+
+def update_appeal(content_id: str, reasoning: str) -> int:
+    # In-place appeal update: flip status and store the reasoning on the original
+    # row, leaving attribution/confidence/signal scores intact. Returns rowcount.
+    conn = _connect()
+    try:
+        cursor = conn.execute(
+            "UPDATE audit_log SET status = 'under_review', appeal_reasoning = ? "
+            "WHERE content_id = ?",
+            (reasoning, content_id),
+        )
+        conn.commit()
+        return cursor.rowcount
     finally:
         conn.close()
