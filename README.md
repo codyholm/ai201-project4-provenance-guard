@@ -256,3 +256,75 @@ populated). The transparency `label` is not stored — it is derived from
 
 For grading evidence, `GET /log` shows at least three rows, at least one of which
 has been appealed.
+
+## Known limitations
+
+**Uniform, formal human writing** is the content type this system is most likely
+to misclassify — think academic abstracts, cover letters, legal or financial
+prose. Both signals push the same wrong direction on it: `llm_judgement` reads
+polished, generic, structurally consistent prose as AI-assisted, and the
+`pattern_analysis` burstiness marker reads uniform sentence lengths as the AI
+tell. Neither signal can distinguish *disciplined human formality* from AI
+uniformity, because that distinction is not present in sentence shape or surface
+style. In testing, the formal-human monetary-policy passage scored `0.625` —
+`uncertain`, right at the edge of `likely_ai`. This is why the AI label carries
+the higher evidence burden (`> 0.65`) and why appeals exist: a formal human
+writer who lands in `uncertain` is never *accused*, and can contest.
+
+A second known-weak case is **poetry and song lyrics**, where deliberate
+repetition, fragments, and unconventional punctuation can trip the presence
+markers; those inputs tend toward `uncertain` rather than a confident verdict.
+
+## Spec reflection
+
+**Where the spec helped:** writing the three transparency-label strings and the
+confidence-band thresholds (`0.40` / `0.65`) into `planning.md` *before* any code
+meant Milestones 4–5 had concrete targets to implement against. The scoring
+function and label selector were built to fixed thresholds and exact label text,
+which is what kept confidence from collapsing into a binary flip at `0.5` — the
+uncertain band was a designed range, not an afterthought.
+
+**Where implementation diverged:** the spec described `pattern_analysis` as
+*three* markers (sentence-length variation, repetition, punctuation) using a raw
+coefficient of variation for burstiness. The implementation diverged to *four*
+markers using a *robust* CV. Calibrating against a labeled corpus showed raw
+stdev/mean was outlier-fragile — a single long sentence inflated it and flipped
+otherwise-uniform AI text to a false "human" reading — so burstiness moved to
+median-absolute-deviation over the median. A fourth, presence-only `lexicon`
+marker was then added to cover an AI-vocabulary dimension the original three
+missed. The combiner, thresholds, and response shape stayed exactly as specified.
+This divergence was anticipated: the spec explicitly labeled the marker set and
+`*_REF` constants as "heuristics to calibrate during Milestone 4, not fixed," so
+measurement was expected to refine them.
+
+## AI usage
+
+**1. Designing the second signal's marker set.** I directed the AI to propose
+stylometric markers for `pattern_analysis`. It produced a five-marker draft that
+included type-token ratio (lexical diversity) and a readability/complexity score.
+I **overrode** both: their direction flips by domain and comparison group, and
+they are exactly the markers most likely to misfire on creative content (poems,
+lyrics) — the platform's core false-positive risk. I narrowed the set and, in a
+later pass, directed the switch of burstiness from raw CV to robust rCV after
+corpus measurement, and the addition of a presence-only `lexicon` marker. I
+**revised** the lexicon's integration to stay one-of-four equal and floored at
+`0.5` (rather than a heavier weight) after confirming on the labeled corpus that
+it produced zero false positives on human samples.
+
+**2. Confidence thresholds and the meaning of the score.** I directed the AI to
+implement the confidence-to-label mapping. I **overrode** the intuitive symmetric
+split around `0.5` and set asymmetric thresholds (`0.40` / `0.65`) so the AI label
+requires more evidence than the human label — reflecting that a false AI
+accusation is the more harmful error. I also **decided** that the `confidence`
+field means *AI-evidence*, not generic certainty, and revised the label wording
+and documentation to match so a low score on a human verdict is not misread as
+"low confidence."
+
+**3. Exploring a third signal for the ensemble stretch (rejected).** I directed
+the AI to prototype a compression/entropy-based third signal to chase the
+ensemble-detection bonus. Rather than accept it, I had it **calibrate against the
+corpus first** — which showed raw compression ratio was largely a text-length
+proxy (correlation ≈ 0.53) with weak class separation, and character entropy gave
+no separation at all. I **overrode** the plan and kept the two-signal design
+rather than ship a signal that measured length more than authorship for the
+points.
