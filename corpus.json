@@ -1,0 +1,149 @@
+[
+  {
+    "id": "ai_coldbrew",
+    "label": "ai",
+    "group": "howto-short",
+    "source": "subagent gen-explainer",
+    "text": "Making cold brew at home starts with a coarse grind—aim for something close to raw sugar in texture, since a fine grind will slip through your filter and turn the batch murky. Combine the grounds with cold, filtered water at roughly a 1-to-4 ratio for a concentrate, stirring gently to make sure every ground is saturated. Cover the container and let it steep at room temperature or in the fridge for 12 to 18 hours, tasting toward the end to find the strength you like. When it's ready, strain the coffee through a fine-mesh sieve lined with cheesecloth or a paper filter, then repeat once more to catch the fine sediment. Dilute the concentrate with water or milk to taste, pour over ice, and store the rest in the fridge for up to two weeks."
+  },
+  {
+    "id": "ai_coffeereview",
+    "label": "ai",
+    "group": "review-short",
+    "source": "subagent gen-explainer",
+    "text": "The Fox & Kettle on Maple Street has quietly become my favorite corner of the neighborhood, mostly because the baristas remember your order without making a performance of it. Their honey-oat latte is genuinely excellent, and the mismatched armchairs by the window make it easy to lose an afternoon there. My only complaint is that word has clearly gotten out, so good luck finding a seat after nine on a weekend."
+  },
+  {
+    "id": "ai_coverletter",
+    "label": "ai",
+    "group": "coverletter",
+    "source": "subagent gen-professional",
+    "text": "I am excited to apply for the Junior Marketing Associate position, as I believe my blend of creativity and analytical curiosity makes me a strong fit for your team. During my internship at a local nonprofit, I helped grow their social media following by thirty percent over four months by testing new content formats and studying which posts resonated most with our audience. I am comfortable working across email campaigns, basic analytics tools, and copywriting, and I genuinely enjoy turning data into stories that connect with people. What draws me to your company in particular is your reputation for bold, customer-first campaigns, and I would love to contribute fresh ideas while learning from an experienced marketing team. Thank you for considering my application; I would welcome the chance to discuss how my enthusiasm and drive could support your goals."
+  },
+  {
+    "id": "ai_announcement",
+    "label": "ai",
+    "group": "announcement-short",
+    "source": "subagent gen-professional",
+    "text": "Today we're introducing Smart Threads, a new feature that automatically links related notes so your ideas stay connected without any manual tagging. As you write, the app surfaces relevant past notes in a sidebar, helping you build on earlier thinking instead of losing it. Smart Threads is rolling out to all users this week at no additional cost."
+  },
+  {
+    "id": "ai_lighthouse",
+    "label": "ai",
+    "group": "story-short",
+    "source": "subagent gen-storyteller",
+    "text": "The lighthouse keeper wound the great lamp at dusk, same as every evening, and watched the beam sweep out across water gone the color of slate. Below, the tide came in with its patient, indifferent rhythm, and a single gull settled on the railing to wait out the wind with him. He drank his tea while it was still too hot, because he always did, and the burn on his tongue was a small familiar company. When the fog rolled in low and soft, he did not worry; the light would find its way through, as it always had. He sat, and he kept it, and that was enough."
+  },
+  {
+    "id": "ai_missedbus",
+    "label": "ai",
+    "group": "anecdote-short",
+    "source": "subagent gen-storyteller",
+    "text": "I missed the last bus home by about four seconds, close enough to slap my palm against its back window while the driver pretended not to see me in his mirror. I stood there in the drizzle doing the math on a two-mile walk, then just started laughing, because there was nothing else left to do. The walk turned out to be the best part of my week."
+  },
+  {
+    "id": "ai_composting",
+    "label": "ai",
+    "group": "howto-long",
+    "source": "subagent gen-explainer",
+    "text": "Starting a compost pile at home is one of the simplest ways to turn kitchen scraps and yard waste into something genuinely useful, and it takes far less effort than most people assume. Before you toss a single banana peel, decide where the composting will happen: a shaded corner of the yard, a lidded bin on a balcony, or a countertop caddy that feeds a larger system. If you have outdoor space, a simple enclosure made from wire mesh or a repurposed plastic bin with drainage holes works fine, and you don't need to buy anything fancy to get started. Apartment dwellers can compost too, either with a sealed worm bin tucked under the sink or by collecting scraps in the freezer and dropping them at a community garden or municipal program. The goal at this stage is just to lower the barrier so that composting becomes a habit rather than a chore you keep putting off. The heart of good compost is balance between two kinds of material, and once you understand it the rest becomes intuitive. \"Greens\" are the wet, nitrogen-rich items—fruit and vegetable scraps, coffee grounds, fresh grass clippings, and eggshells—while \"browns\" are the dry, carbon-rich materials like shredded cardboard, dead leaves, paper towels, and small twigs. A healthy pile leans toward more browns than greens, roughly two or three parts brown to one part green by volume, because too many greens turn the pile into a wet, smelly mess. Chop or tear larger pieces into smaller bits so they break down faster, and keep a bag of dry leaves or shredded paper nearby to toss on top whenever you add food scraps. Just as important is knowing what to leave out: meat, dairy, oily foods, and pet waste attract pests and create odors, so keep those out of a home system entirely. With your materials sorted, the day-to-day routine is mostly about maintaining moisture and air. Your pile should feel like a wrung-out sponge—damp but not dripping—so add water during dry spells and extra browns if it ever gets soggy. Oxygen is what keeps the helpful microbes working and the smell at bay, so turn or fluff the pile with a pitchfork or aerator every week or two to mix fresh material into the center. A well-tended pile will actually heat up in the middle, which is a good sign that decomposition is happening efficiently. If it starts to smell sour, it usually means too much moisture or not enough air, and the fix is simply to add browns and give it a thorough turn. Don't panic over small problems; composting is forgiving, and almost any imbalance can be corrected with a handful of leaves or a good stir. Patience is the final ingredient, because finished compost takes anywhere from two months to a year depending on your climate, materials, and how often you turn the pile. You'll know it's ready when the material is dark and crumbly, smells like rich earth rather than garbage, and you can no longer recognize the scraps you put in. At that point, sift out any large chunks that haven't fully broken down and toss them back into the active pile to keep working. Spread the finished compost around garden beds, mix it into potting soil, or top-dress your lawn to feed the plants and improve the soil's ability to hold water. Over time you'll get a feel for the rhythm of your particular setup, adjusting the greens-to-browns ratio and turning schedule to suit the seasons. More than anything, remember that every bin of compost is waste you kept out of a landfill, and that small, steady habit adds up to a real difference."
+  },
+  {
+    "id": "ai_clockshop",
+    "label": "ai",
+    "group": "story-long",
+    "source": "subagent gen-storyteller",
+    "text": "Mara inherited the clock shop the way you inherit a stubborn old dog: not because you asked for it, but because no one else would take it in. Her uncle had run the place for forty years, and when he died the lawyer handed her a brass key and a ledger written in a hand so cramped it looked like a fence line. The shop sat between a bakery and a shuttered pharmacy on a street that had mostly given up on foot traffic. On the first morning she unlocked the door, three hundred clocks were ticking, and not one of them agreed on the time. She meant to sell it. She told herself this while she dusted the walnut cases, while she oiled the escapements, while she learned, almost against her will, the difference between a lever and a cylinder movement. The old regulars kept coming anyway. There was a retired ferry captain who wound his father's marine chronometer every Thursday and never bought a thing. There was a girl of about nine who pressed her nose to the window each afternoon and mouthed the names of the birds carved into the cuckoo cases. Mara found she was staying open later than she needed to, listening to the shop breathe in a thousand small metal heartbeats, and the \"for sale\" sign she had bought stayed face-down in a drawer. The trouble arrived in October, in the form of a letter from the city. The block was being redeveloped, the letter explained, and the shop's lease would not be renewed past the spring. Mara sat on the stool behind the counter and felt the whole weight of it settle on her, forty years of somebody else's patience about to be swept into a skip. She thought about the captain, and the girl, and the way the light came through the front window at four o'clock and turned the brass to honey. For the first time she understood that she had stopped planning to leave sometime in the summer without ever deciding to stay. So she did the only thing that made sense to her, which was to teach. She put a small hand-lettered card in the window offering free lessons to anyone who wanted to learn to keep a clock running, and to her surprise the room filled. The captain taught knots he swore were relevant. The nine-year-old, whose name turned out to be Posy, had steadier hands than any adult and a memory like a snare. By spring the shop had moved three streets over into a narrower space with a better lease, and half the clocks went with it, carried by the very people who had come to fix them. Mara never did sell the place. She had thought she was inheriting a burden, and it took her almost a year to see that what she'd really been handed was a way to make time belong to more than one person at once."
+  },
+  {
+    "id": "ai_remotework",
+    "label": "ai",
+    "group": "essay-long",
+    "source": "subagent gen-professional",
+    "text": "The debate over remote work usually centers on productivity metrics and commute times, but for people in the first few years of their careers the stakes are different and, I would argue, more serious. My position is that fully remote work tends to hurt early-career employees, not because they cannot do the tasks assigned to them, but because it quietly strips away the informal learning that turns a competent beginner into a capable professional. A junior employee's real job is not only to complete tickets or draft reports; it is to absorb judgment, context, and unwritten norms that no onboarding document ever captures. When that absorption depends on being in the room, distance becomes a hidden tax on growth. The convenience of working from home is real, but for someone still figuring out how the work actually gets done, convenience is not the same as advantage. Consider how much of early professional development happens by accident. A new analyst overhears how a senior colleague pushes back on an unreasonable deadline, or watches how a manager reframes a tense client call, and learns something that would have taken months to discover alone. These moments are almost impossible to schedule, and they rarely survive the translation to a video call, where cameras are off, side conversations vanish, and every interaction has to be deliberately initiated. Remote work replaces the ambient, low-stakes exposure of an office with a series of formal meetings that reward people who already know what to ask. Beginners, by definition, do not yet know what they do not know, so the burden of seeking help falls hardest on those least equipped to carry it. The result is that confident, well-connected newcomers still thrive, while quieter or less experienced ones drift, unnoticed, until a performance review makes their isolation official. None of this means remote work is inherently harmful or that offices are magically nurturing; plenty of in-person workplaces ignore their juniors just as thoroughly. Remote arrangements offer genuine benefits, including access to jobs regardless of geography, relief for those with caregiving responsibilities, and freedom from punishing commutes that drain energy better spent on the work itself. A disciplined hybrid model, with intentional mentorship and regular in-person time, can capture much of that flexibility while preserving the human contact beginners need. The problem is that the flexibility tends to be distributed unevenly, and early-career workers are the ones with the least leverage to demand structured support. Left to default, remote culture optimizes for the autonomy of experienced staff who already have networks and reputations to coast on. That default is precisely what fails the people who have neither. So the honest conclusion is not that remote work is good or bad in the abstract, but that its costs land disproportionately on those at the start of their careers. If organizations want to keep the flexibility without sacrificing their next generation of talent, they have to treat mentorship as infrastructure rather than a happy accident. That means deliberate pairing, protected in-person time, and managers who are measured on how well their juniors grow, not just on what ships. Until that effort becomes standard, I believe early-career employees are usually better served by environments that put them close to the people they are trying to become. Flexibility can be earned once the foundation is built; for beginners, the foundation should come first."
+  },
+  {
+    "id": "ai_garden",
+    "label": "ai",
+    "group": "blog-med",
+    "source": "subagent gen-blogger",
+    "text": "Starting a backyard vegetable garden is one of the most rewarding projects you can take on, and you don't need much to begin. Pick a spot that gets at least six hours of sunlight a day, and start small—a single raised bed or even a few large containers is plenty for your first season. Trying to plant an entire yard at once is the fastest way to feel overwhelmed, so give yourself room to learn as you go. Focus on vegetables that are forgiving for beginners. Tomatoes, lettuce, zucchini, radishes, and green beans all grow quickly and don't demand much fuss, which means you'll see results and stay motivated. Before you plant, spend a little time improving your soil with compost; healthy soil does more for your harvest than almost anything else you can buy. Watering is where many first-timers stumble. Aim for deep, consistent watering a few times a week rather than a light sprinkle every day, since deeper watering encourages stronger roots. Check your plants every morning if you can—it only takes a few minutes to spot pests, wilting, or ripe produce ready to pick. Most importantly, be patient with yourself. Some plants will thrive and others will flop, and that's simply part of gardening. Every season teaches you something new, so keep notes on what worked, celebrate your first homegrown meal, and enjoy the process of growing food with your own hands."
+  },
+  {
+    "id": "ai_waterbottle",
+    "label": "ai",
+    "group": "product-short",
+    "source": "subagent gen-blogger",
+    "text": "Stay hydrated in style with our double-walled stainless steel water bottle, engineered to keep your drinks cold for up to 24 hours and hot for up to 12. Its durable, BPA-free construction and leak-proof lid make it the perfect companion for the gym, office, or trail. Refill it again and again to cut down on single-use plastic while enjoying fresh-tasting water all day long."
+  },
+  {
+    "id": "hu_cookery",
+    "label": "human",
+    "group": "gutenberg-1889",
+    "source": "Choice Cookery, Catherine Owen 1889 (PG#26311)",
+    "text": "This batter should be just thick enough to coat the fish and run slowly off, not cling in a thick paste round it. A French rule for testing the thickness of frying batter is to dip a spoon in it and then let a drop run off the end on a plate; if it drops freely, yet keeps a beadlike form, it is right. Fry each fillet in a wire basket three minutes in very hot deep fat. Serve with fried parsley."
+  },
+  {
+    "id": "hu_oregon",
+    "label": "human",
+    "group": "gutenberg-1845",
+    "source": "Palmer's Journal of Travels 1845-46 (PG#46906)",
+    "text": "While we remained in this place, great efforts were made to induce the emigrants to pursue the route to California. The most extravagant tales were related respecting the dangers that awaited a trip to Oregon, and of the difficulties and trials to be surmounted. The perils of the way were so magnified as to make us suppose the journey to Oregon almost impossible."
+  },
+  {
+    "id": "hu_russiandinner",
+    "label": "human",
+    "group": "gutenberg-1917",
+    "source": "Diary of a Russian Lady, Dukhovskaia 1917 (PG#73953)",
+    "text": "Dinner was served à la franca, but there were knives and forks for us only, our hosts did very well without them, helping themselves with their fingers. The meal consisted of a score of meat and sweet dishes intermingled. I did not know what I was eating, but was compelled to taste everything, to refuse would be a great offence to our hostess, and I resigned myself to swallow all sorts of nasty things. Our hostess, according to the custom of the country, tasted every dish before it was served to her guests, in order to prove that it wasn't poisoned."
+  },
+  {
+    "id": "hu_timberlake",
+    "label": "human",
+    "group": "gutenberg-1765",
+    "source": "Memoirs of Lieut. Henry Timberlake 1765 (PG#65256)",
+    "text": "As no more ceremony seemed to be going forward, I took a walk till the Indians assembled to take it. At my return I found the house quite full: they danced near an hour round the pot, till one of them, with a small goard that might hold about a gill, took some of the physic, and drank it, after which all the rest took in turn."
+  },
+  {
+    "id": "hu_paris",
+    "label": "human",
+    "group": "metafilter-2008",
+    "source": "Ask MetaFilter, drinkcoffee, 2008",
+    "text": "Several years ago, my wife and I stayed at the Hotel Clement in the 6th arrondissement. Right around the corner was the Mabilllon metro station, and we found an amazing amount of excellent Paris culture within walking distance. I'm pretty sure you can walk to the Louvre and Notre Dame from there, and Saint Sulpice was literally right outside our window (although we did take a cab to the Eiffel Tower). The staff spoke English and was very friendly. I highly recommend spending several hours a day at the many fine cafes in the area just sitting and enjoying being IN PARIS. Also, try to speak French as much as possible, even if you're terrible at it. They will love you for it."
+  },
+  {
+    "id": "hu_pureed",
+    "label": "human",
+    "group": "metafilter-2008",
+    "source": "Ask MetaFilter, Sidhedevil, 2008",
+    "text": "Yes, soup. And ice-cream. I have a texture-phobia--I like food to be either solid or liquid, thank you. Now is the time to have all the lobster bisque, butternut-squash soup with real cream, and potato-cheddar soup you might skimp on otherwise to avoid a cholesterol meltdown."
+  },
+  {
+    "id": "hu_solstice",
+    "label": "human",
+    "group": "hackernews-2017",
+    "source": "Hacker News, wyclif, 2017",
+    "text": "I grew up at about 40 degrees northern latitude. I've been living in the Philippines temporarily for the past two years, and the only time I get homesick is at Christmas and the winter solstice. I'm now about 10 degrees above the equator, and it's just not the same at all. Essentially the sun rises and sets here the same time every day as far as anyone notices (even though there is a slight variation). There something about an obvious solstice that makes you physically, psychologically, and spiritually more aware that time moves inevitably on."
+  },
+  {
+    "id": "hu_butter",
+    "label": "human",
+    "group": "hackernews-2019",
+    "source": "Hacker News, wirrbel, 2019",
+    "text": "My mother (and thus me because I learned to cook from her) always used clarified butter (butterschmalz, or ghee if you source it from Indian stores). Once learning about the history of seed oils I am quite happy I stuck to this."
+  },
+  {
+    "id": "hu_nyc_elevated",
+    "label": "human",
+    "group": "gutenberg-1917-long",
+    "source": "Diary of a Russian Lady, Dukhovskaia 1917 (PG#73953)",
+    "text": "Next day we went to call on the Hollands, our Cairo friends, who live at Windsor Hotel. We started down Fifth Avenue, a street lined with solemn stately buildings with pillared porticoes, all of the self-same pattern. The height of the houses amazed me, some of them being from twenty to twenty-five stories high. The streets are mostly numbered and run in rows. The life in the streets is tremendous. There was an appalling thunder of trains rushing every minute above our heads. Finally we got to the Windsor Hotel which, like all the big hotels, has its own telegraph and telephone offices, its milliner, hairdresser, etc. We were told at the office that the Hollands had gone the day before to Lake Mohawk. We sent a wire to tell them that we were here, and started back to our hotel by the \"Elevated,\" an electric suspended railway built upon iron struts above the houses, which cuts through New York in all directions. It made abrupt turnings, and rushed at a reckless pace over the roofs of the houses, or raced through tunnels beneath them. It is great fun looking through other people's windows, and getting a peep into comedies and tragedies sometimes. The train suddenly stops short with a jerk that sends the passengers into a conglomerate struggling mass, and throws them into each other's arms."
+  },
+  {
+    "id": "hu_startups",
+    "label": "human",
+    "group": "hackernews-2019-long",
+    "source": "Hacker News, TuringNYC, 2019",
+    "text": "I worked at big companies for the first 15yrs of my career. And startups for the past 5yrs. Firstly, startups have been an absolute delight. I very carefully chose the company and hence my boss and my co-workers and love working with every engineer on the team. It is a pleasure coming into work each day and I often cant leave because I'm excited about my work. I have a lot of authority over what I build a much of it is \"close to the metal\" rather than some side system. I get to see the whole slice of cake from conception all the way to sales and client implementations and participate in all of it. At small companies, as an Engineer, I learned how to build a successful product and learned all the steps from inception to sales and production. At every big company I was at, there was more specialization and lots of process. Process was necessary at that size. There was also a great deal of inter-departmental politics and incentives were usually not aligned at big companies, sometimes incentives across departments were even orthogonal. I spent 30% of my time on process and communication at big companies and it went to 80%+ once I was a senior executive. I made a lot of money there, but I think it was to compensate for having to deal with the inner workings of a big company (and being able to be effective at it.) At big companies, I learned how to turn the gears of organizations and learn how to make globe-spanning change effectively. To be fair, I took a big pay-cut to come to a startup as an Engineer. I'm happy with the choice. I dont think there is any silver bullet out there, but it is important to understand what you get with each choice. It is also important to make that choice with full intent and not be fooled or brow-beaten by anyone."
+  }
+]
