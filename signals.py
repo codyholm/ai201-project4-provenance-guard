@@ -111,24 +111,79 @@ def run_llm_judgement(text: str) -> dict:
 # Two kinds of marker, averaged equally:
 #   * sentence_length_variation is BIDIRECTIONAL — bursty sentence lengths are
 #     genuine human evidence and uniform lengths are genuine AI evidence, so it
-#     uses the full 0.0–1.0 range.
-#   * repetition and punctuation are PRESENCE detectors — their tell (repeated
-#     phrasing, em-dash/semicolon overuse) is often absent even in AI text, and
-#     absence is not evidence of a human. So absence maps to ABSENCE_FLOOR (the
-#     neutral midpoint — no information, not a human lean) and a present tell
-#     pushes up toward 1.0.
+#     uses the full 0.0–1.0 range. It uses robust CV (MAD/median) so a single
+#     outlier sentence cannot falsely inflate dispersion.
+#   * repetition, punctuation, and lexicon are PRESENCE detectors — their tell
+#     (repeated phrasing, em-dash/semicolon overuse, AI-favored vocabulary) is
+#     often absent even in AI text, and absence is not evidence of a human. So
+#     absence maps to ABSENCE_FLOOR (the neutral midpoint — no information, not a
+#     human lean) and a present tell pushes up toward 1.0.
 #
 # The *_REF values and the floor are starting calibration heuristics (Milestone
 # 4), not fixed truths — tune them during verification.
-CV_REF = 0.6          # sentence-length CV at/above which text reads fully human
+RCV_REF = 0.30        # robust CV (MAD/median) reference: uniform→AI reads high,
+                      # bursty→human reads low (calibrated on labeled corpus)
 OPENER_REF = 0.5      # repeated-opener fraction at/above which text reads fully AI
 PUNCT_REF = 0.8       # em-dash+semicolon per-sentence rate that reads fully AI
+LEX_REF = 40.0        # AI-favored words+phrases per 1000 words at/above which text
+                      # reads fully AI; presence-only, absent tell → neutral floor
 ABSENCE_FLOOR = 0.5   # neutral score for a presence-only marker whose tell is absent
 # Stability gate: below this little text the markers are noise. Three sentences
 # is the real floor (variance needs spread); the word floor only rules out
 # ultra-short text — a handful of short sentences is still measurable.
 MIN_STABLE_WORDS = 25
 MIN_STABLE_SENTENCES = 3
+
+# Lexicon: presence-only AI-vocabulary tell.
+# Word hits are exact-token matches against lowercased words.
+# Phrase hits are substring matches on lowercased raw text.
+# -ing opener hits are sentence-initial matches via regex.
+AI_LEXICON = {
+    # Academic / excess-vocabulary (Kobak et al. 2024) — strongest evidence
+    "delve", "delves", "delving", "moreover", "furthermore", "additionally",
+    "consequently", "notably", "importantly", "ultimately", "overall",
+    "intricate", "intricacies", "showcase", "showcasing", "underscore",
+    "underscores", "underscoring", "pivotal", "comprehensive", "multifaceted",
+    "realm", "tapestry", "testament", "nuanced", "holistic", "seamless",
+    "seamlessly", "leverage", "leverages", "foster", "fostering", "vibrant",
+    "meticulous", "meticulously", "crucial", "robust", "myriad", "plethora",
+    "endeavor",
+    # Broadened: marketing / self-help register (higher FP risk — contained)
+    "gamechanger", "supercharge", "revolutionize",
+    "revolutionizes", "revolutionized",
+}
+
+AI_PHRASES = [
+    # Academic hedging / discourse phrases
+    "it is important to note", "it is worth noting", "plays a crucial role",
+    "when it comes to", "a wide range of", "in the realm of", "in today's",
+    "rich tapestry", "it is essential to", "must collaborate",
+    # Informal / blog register
+    "let's dive in", "let's dive into", "in this post, we'll",
+    "in this guide, we'll", "i wanted to share", "at the end of the day",
+    "when you really think about it", "it's not just about", "the truth is",
+    "here's the thing", "in a world where", "imagine a world",
+    "what if i told you", "the bottom line is", "it's safe to say",
+    "needless to say", "you might be wondering",
+    # Creative / story clichés
+    "a symphony of", "a dance of", "seemed to whisper", "couldn't help but",
+    "a sense of", "the air was thick with", "little did they know",
+    "as the sun set", "as the sun dipped", "time seemed to stand still",
+    "a flicker of", "a glimmer of", "the weight of",
+    # Marketing / product copy
+    "unlock the power of", "seamlessly integrates", "transform your",
+    "discover the power of", "say goodbye to", "revolutionize your",
+    "the ultimate guide", "you deserve", "it's that simple", "game-changer",
+]
+
+# Trailing -ing participles that begin a sentence/clause — AI overuses these
+# as superficial structural openers.
+_ING_OPENER_RE = re.compile(
+    r"(?:^|[.!?]\s+)(highlighting|underscoring|emphasizing|ensuring|reflecting|"
+    r"fostering|enhancing|showcasing|providing|offering|demonstrating|"
+    r"illustrating|exemplifying|symbolizing|contributing|encompassing|serving)\b",
+    re.IGNORECASE | re.MULTILINE,
+)
 
 _SENTENCE_SPLIT = re.compile(r"[.!?]+")
 _WORD = re.compile(r"\b\w+\b")
@@ -147,13 +202,15 @@ def _presence_score(raw_signal: float, ref: float) -> float:
 
 def _sentence_length_variation(words_per_sentence: list[int]) -> float:
     # Human writing is "bursty" — long and short sentences alternate. AI text
-    # regresses to a uniform mean length, so low variation is the AI tell. This
-    # marker is bidirectional: high variation is real human evidence (no floor).
-    mean = statistics.mean(words_per_sentence)
-    if mean == 0:
+    # regresses to a uniform mean length, so low dispersion is the AI tell.
+    # Robust CV (MAD/median) is outlier-resistant: one runaway sentence does not
+    # inflate stdev and falsely claim "bursty/human". Bidirectional (no floor).
+    med = statistics.median(words_per_sentence)
+    if med == 0:
         return 0.5
-    cv = statistics.stdev(words_per_sentence) / mean
-    return _clamp(1 - cv / CV_REF)
+    mad = statistics.median([abs(x - med) for x in words_per_sentence])
+    rcv = mad / med
+    return _clamp(1 - rcv / RCV_REF)
 
 
 def _repetition(sentences: list[str], words: list[str]) -> float:
@@ -173,9 +230,22 @@ def _punctuation(text: str, sentence_count: int) -> float:
     # Em-dash / semicolon overuse is the strongest modern AI punctuation tell.
     # Presence-only: its absence does not prove human authorship, and a human who
     # favors em-dashes should not be dragged far — hence the floor and the high
-    # PUNCT_REF, so a stray dash barely moves this one of three equal markers.
+    # PUNCT_REF, so a stray dash barely moves this one of four equal markers.
     marks = text.count("—") + text.count("--") + text.count("–") + text.count(";")
     return _presence_score(marks / sentence_count, PUNCT_REF)
+
+
+def _lexicon(text: str, words: list[str]) -> float:
+    # Presence-only AI-vocabulary tell: exact-word hits + substring phrase hits +
+    # sentence-initial -ing opener hits, normalized per 1000 words.
+    # Absent tell → 0.5 neutral (no human claim); present tell → pushes toward 1.0.
+    low = text.lower()
+    lex_hits = sum(1 for w in words if w in AI_LEXICON)
+    phrase_hits = sum(low.count(p) for p in AI_PHRASES)
+    opener_hits = len(_ING_OPENER_RE.findall(text))
+    total_hits = lex_hits + phrase_hits + opener_hits
+    rate = 1000.0 * total_hits / len(words) if words else 0.0
+    return _presence_score(rate, LEX_REF)
 
 
 def run_pattern_analysis(text: str) -> dict:
@@ -190,6 +260,7 @@ def run_pattern_analysis(text: str) -> dict:
             "sentence_length_variation": 0.5,
             "repetition": 0.5,
             "punctuation": 0.5,
+            "lexicon": 0.5,
         }
         return {"pattern_score": 0.5, "pattern_markers": neutral}
 
@@ -198,6 +269,7 @@ def run_pattern_analysis(text: str) -> dict:
         "sentence_length_variation": round(_sentence_length_variation(words_per_sentence), 4),
         "repetition": round(_repetition(sentences, words), 4),
         "punctuation": round(_punctuation(text, len(sentences)), 4),
+        "lexicon": round(_lexicon(text, words), 4),
     }
     pattern_score = round(statistics.mean(markers.values()), 4)
     return {"pattern_score": pattern_score, "pattern_markers": markers}
