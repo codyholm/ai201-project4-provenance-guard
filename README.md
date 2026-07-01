@@ -122,27 +122,29 @@ The thresholds are asymmetric on purpose: text must clear `0.65` to be labeled
 `likely_ai` but only drop below `0.40` to be labeled `likely_human`, because
 mislabeling a human's work as AI is the more harmful error on a creative platform.
 
-**Validating that the scores are meaningful.** The score has to *vary* across
-inputs, not hover near a constant. I tested the four inputs from the project
-guide (clearly AI, clearly human, formal-human borderline, lightly edited AI) end
-to end and confirmed all three labels are reachable with genuinely different
-scores. The deterministic signal was separately calibrated against a labeled
-21-sample corpus (`corpus.json`, via `eval_harness.py`), which is how the
-burstiness marker's robust-CV reference and the AI/human separation were checked.
+**Does the score actually vary?** A confidence score is only useful if it moves
+with the input instead of hovering near a constant. Four inputs that should land
+differently — clearly AI, clearly human, a formal-human borderline, and lightly
+edited AI — produce three distinct labels across a wide score range (below). The
+stylometric signal was tuned against a labeled 21-sample corpus (`corpus.json`,
+via `eval_harness.py`): that is where the burstiness marker's robust-CV reference
+came from and where the human/AI separation was measured.
 
 | Submission | `llm_score` | `pattern_score` | `confidence` | Attribution |
 | --- | --- | --- | --- | --- |
 | Clearly AI (formal essay) | 0.75 | 0.680 | **0.715** | `likely_ai` |
 | Formal-human borderline | 0.75 | 0.500 | 0.625 | `uncertain` |
-| Casual human (ramen review) | 0.20 | 0.549 | 0.375 | `likely_human` |
-| Lightly edited AI | 0.25 | 0.677 | **0.464** | `uncertain` |
+| Casual human (ramen review) | 0.20 | 0.474 | 0.337 | `likely_human` |
+| Lightly edited AI | 0.25 | 0.594 | **0.422** | `uncertain` |
 
-**Two examples with noticeably different confidence:** the clearly-AI formal essay
-scores **0.715** (`likely_ai`) — a high-confidence result where both signals
-agree. The lightly edited AI passage scores **0.464** (`uncertain`) — a
-lower-confidence result where the signals disagree (the LLM reads it as human at
-0.25 while the structural markers read AI at 0.677), so the average lands in the
-uncertain band instead of forcing a verdict. Same pipeline, very different scores.
+All figures are real `/submit` responses, from the same run shown in the audit
+log below.
+
+The spread is meaningful. The clearly-AI formal essay scores **0.715**
+(`likely_ai`), where both signals agree. The lightly edited AI passage scores
+**0.422** (`uncertain`): the LLM reads it as human (0.25) while the structural
+markers read AI (0.594), so the average settles in the uncertain band instead of
+forcing a verdict. Same pipeline, very different outcomes.
 
 ## Transparency labels
 
@@ -245,6 +247,29 @@ than 10 classifications a minute; the daily cap allows normal use while limiting
 sustained abuse. Exceeding either limit returns HTTP `429 Too Many Requests`.
 Counters are held in-process (`storage_uri="memory://"`) and reset on restart.
 
+For example, 12 rapid `POST /submit` requests against the `10 per minute` limit:
+
+```text
+request  1 -> 200
+request  2 -> 200
+request  3 -> 200
+request  4 -> 200
+request  5 -> 200
+request  6 -> 200
+request  7 -> 200
+request  8 -> 200
+request  9 -> 200
+request 10 -> 200
+request 11 -> 429
+request 12 -> 429
+```
+
+The 11th request onward returns the JSON error body:
+
+```json
+{"error": "Rate limit exceeded; try again later"}
+```
+
 ## Audit log
 
 SQLite (`audit_log.db`), one row per submission keyed by `content_id`. A
@@ -254,8 +279,69 @@ visible on the row itself (`status` is `under_review` and `appeal_reasoning` is
 populated). The transparency `label` is not stored — it is derived from
 `attribution` when building the response.
 
-For grading evidence, `GET /log` shows at least three rows, at least one of which
-has been appealed.
+An example `GET /log` response, after submitting the four sample inputs and
+appealing the one classified `likely_ai`. Each row keeps both signal scores, the
+combined confidence, and a timestamp; the appealed row shows `status:
+under_review` with the creator's `appeal_reasoning`:
+
+```json
+{
+  "entries": [
+    {
+      "content_id": "32ad31c7-1f62-471c-ab2e-89f5f9f66256",
+      "creator_id": "demo-ai-edited",
+      "timestamp": "2026-07-01T07:06:41.236410+00:00",
+      "attribution": "uncertain",
+      "confidence": 0.4219,
+      "llm_score": 0.25,
+      "llm_rationale": "The passage has a conversational tone and raises a nuanced point about remote work, suggesting a human writer, but its structure and language are clear and polished, which could also be characteristic of AI-assisted writing.",
+      "pattern_score": 0.5938,
+      "pattern_markers": {"sentence_length_variation": 0.6667, "repetition": 0.5, "punctuation": 0.7083, "lexicon": 0.5},
+      "status": "classified",
+      "appeal_reasoning": null
+    },
+    {
+      "content_id": "e44ff0ee-0804-4f94-873f-f2b10a1443c0",
+      "creator_id": "demo-human-formal",
+      "timestamp": "2026-07-01T07:06:40.713894+00:00",
+      "attribution": "uncertain",
+      "confidence": 0.625,
+      "llm_score": 0.75,
+      "llm_rationale": "The passage has a formal and polished tone, with generic phrasing and a structured approach, which suggests a potential AI-generated or AI-assisted origin, but the topic-specific terminology and nuanced discussion of economic concepts introduce some uncertainty.",
+      "pattern_score": 0.5,
+      "pattern_markers": {"sentence_length_variation": 0.5, "repetition": 0.5, "punctuation": 0.5, "lexicon": 0.5},
+      "status": "classified",
+      "appeal_reasoning": null
+    },
+    {
+      "content_id": "0dcdd5e9-1f83-4311-96e0-2bda837efa2e",
+      "creator_id": "demo-human-casual",
+      "timestamp": "2026-07-01T07:06:40.186484+00:00",
+      "attribution": "likely_human",
+      "confidence": 0.33675,
+      "llm_score": 0.2,
+      "llm_rationale": "The text has a casual, conversational tone and includes personal opinions and experiences, which suggests a human writer, but the language is simple and lacks distinctiveness, which could also be characteristic of AI-generated text.",
+      "pattern_score": 0.4735,
+      "pattern_markers": {"sentence_length_variation": 0.3939, "repetition": 0.5, "punctuation": 0.5, "lexicon": 0.5},
+      "status": "classified",
+      "appeal_reasoning": null
+    },
+    {
+      "content_id": "dc4c81b2-518d-4638-9e4b-0ad8cbae35e0",
+      "creator_id": "demo-ai-formal",
+      "timestamp": "2026-07-01T07:06:39.688994+00:00",
+      "attribution": "likely_ai",
+      "confidence": 0.7151,
+      "llm_score": 0.75,
+      "llm_rationale": "The passage has a polished and uniform structure, uses generic phrasing, and lacks a distinct human voice, suggesting that it may be AI-generated or AI-assisted, but the presence of a clear and coherent argument prevents a higher score.",
+      "pattern_score": 0.6802,
+      "pattern_markers": {"sentence_length_variation": 0.697, "repetition": 0.5238, "punctuation": 0.5, "lexicon": 1.0},
+      "status": "under_review",
+      "appeal_reasoning": "I wrote this essay myself for a university course. I am a non-native English speaker and my academic writing is more formal and structured than casual prose, which I think the detector mistook for AI."
+    }
+  ]
+}
+```
 
 ## Known limitations
 
@@ -277,25 +363,25 @@ markers; those inputs tend toward `uncertain` rather than a confident verdict.
 
 ## Spec reflection
 
-**Where the spec helped:** writing the three transparency-label strings and the
-confidence-band thresholds (`0.40` / `0.65`) into `planning.md` *before* any code
-meant Milestones 4–5 had concrete targets to implement against. The scoring
-function and label selector were built to fixed thresholds and exact label text,
-which is what kept confidence from collapsing into a binary flip at `0.5` — the
-uncertain band was a designed range, not an afterthought.
+This system was designed on paper (`planning.md`) before any code, and two things
+stand out looking back.
 
-**Where implementation diverged:** the spec described `pattern_analysis` as
-*three* markers (sentence-length variation, repetition, punctuation) using a raw
-coefficient of variation for burstiness. The implementation diverged to *four*
-markers using a *robust* CV. Calibrating against a labeled corpus showed raw
-stdev/mean was outlier-fragile — a single long sentence inflated it and flipped
-otherwise-uniform AI text to a false "human" reading — so burstiness moved to
-median-absolute-deviation over the median. A fourth, presence-only `lexicon`
-marker was then added to cover an AI-vocabulary dimension the original three
-missed. The combiner, thresholds, and response shape stayed exactly as specified.
-This divergence was anticipated: the spec explicitly labeled the marker set and
-`*_REF` constants as "heuristics to calibrate during Milestone 4, not fixed," so
-measurement was expected to refine them.
+**What the upfront design bought:** fixing the three label strings and the
+confidence bands (`0.40` / `0.65`) before writing the scorer gave the label logic
+concrete targets from the start. The uncertain band is a deliberately designed
+range, not a fallback — which is what keeps the system from collapsing into a
+binary flip at `0.5`.
+
+**Where the build moved off the plan:** `pattern_analysis` started as three
+markers (sentence-length variation, repetition, punctuation) with a plain
+coefficient of variation for burstiness. It ended up as four, with a *robust* CV
+instead. Measuring against the labeled corpus showed plain stdev/mean was
+outlier-fragile — one long sentence could inflate it and flip otherwise-uniform
+AI text to a false "human" reading — so burstiness moved to median-absolute-
+deviation over the median. A presence-only `lexicon` marker was added afterward to
+cover a vocabulary dimension the first three missed. The combiner, thresholds, and
+response shape never changed. The marker set was always meant to be settled by
+measurement rather than guessed up front — and it was.
 
 ## AI usage
 
@@ -320,11 +406,10 @@ field means *AI-evidence*, not generic certainty, and revised the label wording
 and documentation to match so a low score on a human verdict is not misread as
 "low confidence."
 
-**3. Exploring a third signal for the ensemble stretch (rejected).** I directed
-the AI to prototype a compression/entropy-based third signal to chase the
-ensemble-detection bonus. Rather than accept it, I had it **calibrate against the
+**3. Exploring a third detection signal (rejected).** I had the AI prototype a
+compression/entropy-based third signal to see whether it would add real
+information. Instead of taking it on faith, I made it **calibrate against the
 corpus first** — which showed raw compression ratio was largely a text-length
 proxy (correlation ≈ 0.53) with weak class separation, and character entropy gave
-no separation at all. I **overrode** the plan and kept the two-signal design
-rather than ship a signal that measured length more than authorship for the
-points.
+no separation at all. I **dropped it** and kept the two-signal design rather than
+ship a signal that measured length more than it measured authorship.
