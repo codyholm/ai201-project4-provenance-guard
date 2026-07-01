@@ -23,7 +23,7 @@ The system does not pretend AI detection is certain. Scores near the middle retu
                 │ text
                 ├──────────▶ llm_judgement     → llm_score + llm_rationale
                 │
-                ├──────────▶ pattern_analysis  → pattern_score + pattern_features
+                ├──────────▶ pattern_analysis  → pattern_score + pattern_markers
                 │
                 ▼ llm_score + pattern_score
   ┌───────────────────────────┐
@@ -84,7 +84,7 @@ The appeal flow accepts `content_id` and `creator_reasoning`, finds that submiss
 | Signal | What it captures | Output | Main misses |
 | --- | --- | --- | --- |
 | `llm_judgement` | A Groq-hosted LLM judges the passage as a whole, looking for generic phrasing, overly polished structure, repeated rhetorical moves, and voice. | `llm_score` from `0.0` to `1.0`, plus a short `llm_rationale`. | LLMs can be overconfident, polished human writing can look AI-assisted, and edited AI text can look more human. |
-| `pattern_analysis` | Deterministic writing metrics: sentence length variance, vocabulary diversity, punctuation density/diversity, repetition rate, and a readability or sentence-complexity proxy. | `pattern_score` from `0.0` to `1.0`, plus `pattern_features` (the per-feature scores that are averaged). | Lyrical writing, technical documentation, short-but-valid text, and heavily edited AI text can make the metrics misleading. |
+| `pattern_analysis` | Deterministic stylometric markers: sentence-length variation (burstiness), repeated two-word sentence openers, and em-dash/semicolon punctuation density. | `pattern_score` from `0.0` to `1.0`, plus `pattern_markers` (the per-marker scores that are averaged). | Lyrical writing, technical documentation, short-but-valid text, and heavily edited AI text can make the markers misleading. |
 
 Both signals use the same score direction:
 
@@ -92,7 +92,14 @@ Both signals use the same score direction:
 - `0.5` means mixed or uncertain evidence.
 - `1.0` means strong AI-generated or AI-assisted evidence.
 
-`pattern_analysis` measures each metric from the text and maps it to a `0.0`–`1.0` per-feature score — greater uniformity maps higher, since AI text tends to be more uniform (e.g., low sentence-length variance raises that feature's score). Those per-feature scores are stored as `pattern_features` and averaged into `pattern_score`; the raw measurement is only an input to each feature's score, never an output. The mapping for each metric, the direction of any debatable one (type-token ratio can run either way), and any future per-feature weighting are heuristics to calibrate during Milestone 4, not fixed in this spec.
+`pattern_analysis` measures each marker from the text and maps it to a `0.0`–`1.0` per-marker score, then averages the three equally into `pattern_score`; the raw measurement is only an input to each marker's score, never an output. The markers come in two kinds:
+
+- **Bidirectional** — `sentence-length variation` uses the full range, because bursty sentence lengths are genuine human evidence (`0.0`) and uniform lengths are genuine AI evidence (`1.0`).
+- **Presence detectors** — `repetition` (repeated two-word openers) and `punctuation` (em-dash/semicolon overuse) only register their tell when it is *present*. Their tell is often absent even in AI text, and absence is **not** evidence of a human (you cannot infer human authorship from "no em-dash"), so an absent tell maps to the neutral midpoint `ABSENCE_FLOOR` (≈`0.5`), never to `0.0`. This is what stops the two intermittent markers from burying the burstiness signal: a clearly-AI passage no longer gets dragged to a human score just because it happens to lack repeated phrasing or em-dashes.
+
+The `*_REF` mapping constants and the floor are heuristics to calibrate during Milestone 4, not fixed in this spec.
+
+The marker set was narrowed from an earlier five-marker draft after researching how each behaves for AI vs. human text. Two candidates — lexical diversity (type-token ratio) and readability/complexity — were dropped: their direction flips by domain and comparison group, TTR is also length-fragile, and both are the markers most likely to misfire on this platform's creative content (poems, lyrics), which is the dominant false-positive risk the system is designed to avoid. Repetition is keyed on two-word openers rather than single words so ordinary "The…/If…" technical prose is not mistaken for AI anaphora. Punctuation carries a residual false-positive risk (humans who favor em-dashes), so it stays one of three equal markers with a high reference rate — a stray dash barely moves it. Text whose only AI tell is uniform sentence length stays `uncertain` on this signal alone and relies on `llm_judgement` to corroborate, keeping the higher evidence burden on the AI label.
 
 For `pattern_analysis`, short-but-valid submissions or direct signal tests with too little stable text return near `0.5` instead of pretending the metrics are reliable. The `/submit` endpoint still rejects text under 50 trimmed characters.
 
@@ -222,7 +229,7 @@ There is one row per submission, keyed by `content_id`. A classification writes 
 - `llm_score`
 - `llm_rationale`
 - `pattern_score`
-- `pattern_features`
+- `pattern_markers`
 - `appeal_reasoning` — `null` until an appeal is filed, then set to the creator's reasoning
 
 The transparency `label` text is not stored — it is derived from `attribution` when building the `/submit` response, so storing it would only duplicate the attribution category.
@@ -271,7 +278,7 @@ Deliverables:
 In a new Claude Code session, I will provide the Detection Signals, Confidence Scoring, Architecture (with its diagram), API Surface, and Audit Log sections, plus the Milestone 3 implementation. From that, Claude Code writes a plan for `pattern_analysis` and the scoring function. I review the plan against this spec, especially the score direction and threshold ranges, before implementation. I will test both signals independently and then together on at least four inputs: clearly AI-like, clearly human-like, a technical/formal borderline case, and a lightly edited AI-style case.
 
 Deliverables:
-- `pattern_analysis` signal with per-feature scores and averaging into `pattern_score`
+- `pattern_analysis` signal with per-marker scores (sentence-length variation, repetition, punctuation) and averaging into `pattern_score`
 - Confidence scoring updated to `(llm_score + pattern_score) / 2`
 - `attribution` mapping confirmed against the `0.40` / `0.65` thresholds, now applied to the combined `confidence` (the single-signal version shipped in Milestone 3)
 - Audit log extended to record `pattern_score` alongside `llm_score` and the combined `confidence`
